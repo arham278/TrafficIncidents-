@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Traffic Incidents mapped </title>
+        <link type="text/css" rel="stylesheet" href="https://api.mqcdn.com/sdk/mapquest-js/v1.3.2/mapquest.css" />
+        <script src="https://api.mqcdn.com/sdk/mapquest-js/v1.3.2/mapquest.js"></script>
+
+        <script>
+            
+            function loadJSON(){
+                // Final URL is passed and and the presentIncidents function is loaded as long as the HTTP request is valid for the server 
+                const xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function (){
+                    if (this.readyState == 4 && this.status == 200){
+                        var incidents = JSON.parse(this.responseText).incidents 
+                        presentIncidents(incidents); 
+                    }
+                }
+                xhttp.open('GET', makeURL())
+                xhttp.send()
+
+                
+            }
+
+            function presentIncidents(incidents){
+                // Incidents are loaded and presented then a function is called to load the table of incidents  
+                incidents.forEach(function(incident) {
+                    L.marker([incident.lat, incident.lng], {radius: 2}).addTo(map) 
+                    
+                });
+                createTable(incidents);
+
+            }
+
+            function createTable(incidents) {
+                // Table created which loads the incidents passed onto the parameter. Function called on presentIncidents function 
+                var k = '<tbody>';
+                for(i=0; i<incidents.length; i++) {
+                    k += '<tr>';
+                    k += '<td>' + (i+1) + '</td>';
+                    k += '<td>' + incidents[i].shortDesc + '</td>';
+                    k += '</tr>';
+                }
+
+                k += '</tbody>';
+                document.getElementById('tbody').innerHTML = k;
+            }
+
+
+        </script>  
+    </head>
+
+    <body>
+
+        <div id="map" style="width: 100%; height: 530px;"></div>
+        <script type = "text/javascript">
+            //Map is loaded onto the screen 
+            L.mapquest.key = "4uJjdIOasEn5EdEXHX1URIfbhVpJ3OUe";
+            var map = L.mapquest.map('map', {
+            center: [37.7749, -122.4194],
+            layers: L.mapquest.tileLayer('map'),
+            zoom: 12
+            })
+            
+
+        </script>   
+
+            <script type ="text/javascript">
+            // Details of each city loaded and stored 
+            const cityDetails = new Map();
+            cityDetails.set("New York", [40.71, -74.00])
+            cityDetails.set("Los Angeles", [34.05, -118.24])
+            cityDetails.set("Chicago", [41.85, -87.65])
+            cityDetails.set("Seattle", [47.60, -122.33]) 
+            cityDetails.set("Washington DC", [38.89, -77.03]) 
+
+            function mapChange(){
+                // Depending on city chosen the incidents for that specific city is loaded, function is called to load the chosen city. 
+                var selectedCity = document.getElementById("cities").value 
+                    if (selectedCity = "New York"){
+                        s = 40.71
+                        t = -74.00
+
+                    }
+
+                    else if (selectedCity = "Los Angeles"){
+                        s = 34.05
+                        t = -118.24
+
+                    }
+
+                    else if (selectedCity = "Chicago"){
+                        s = 41.85
+                        t = -87.65
+
+                    
+
+
+                    }
+
+                    else if (selectedCity = "Seattle"){
+                        s = 47.60
+                        t = -122.33
+
+                    }
+
+                    else if (selectedCity = "Washington DC"){
+                        s = 38.89
+                        t = -77.03
+                    }
+
+                    loadJSON(); 
+                    L.mapquest.geocoding().geocode(selectedCity);
+
+
+            }
+
+
+            function makeURL(){
+                // URL made by getting the option selected, with values adjusted for different URLs that will be made. Final URL made to load incidents 
+                var chosenCity = document.getElementById("cities").selectedOptions[0].value;
+                var key = "4uJjdIOasEn5EdEXHX1URIfbhVpJ3OUe"
+                var lat1 = cityDetails.get(chosenCity)[0] - 0.22;
+                var lon1 = cityDetails.get(chosenCity)[1] - 0.22;
+                var lat2 = cityDetails.get(chosenCity)[0] + 0.22;
+                var lon2 = cityDetails.get(chosenCity)[1] + 0.22;
+
+                map.setView([cityDetails.get(chosenCity)[0], cityDetails.get(chosenCity)[1]], 10)
+                var finalURL ='http://www.mapquestapi.com/traffic/v2/incidents?key=' + key + '&boundingBox=' + lat1 + "," + lon1 + "," + lat2 + "," + lon2 
+                return finalURL
+
+            }
+            </script>
+        <div>
+            <h1>Welcome to Tracking Traffic Incidents</h1>
+            <h2> From here you can track the various traffic incidents that are going on in 5 cities</h2>
+            <h2>Please select from the cities below</h2>
+        </div>
+
+        <div>
+            <label for="cities">Choose a City:</label>
+            
+            <select name="cities" id="cities">
+                <option value="New York" lat="40.71" lon="-74.00">New York</option>
+                <option value="Los Angeles" lat="34.05" lon="-118.24">Los Angeles</option>
+                <option value="Chicago" lat="41.85" lon="-87.65">Chicago</option>
+                <option value="Seattle" lat="47.60" lon="-122.33">Seattle</option>
+                <option value="Washington DC" lat="38.89" lon="-77.03">Washington DC</option> 
+
+                
+                
+
+                
+            </select>
+
+            <button type="button" onclick="loadJSON()">Find Incidents</button>
+            
+
+        </div>
+
+        
+        <table id="table">
+            <tbody id="tbody"></tbody>
+        </table>
+
+
+        <script>
+            // Latitude and Longitude extracted to load onto the console
+            function extractLatLong() {
+                let cities = document.getElementById("cities");
+                let row = cities.options[cities.selectedIndex];
+                console.log(row) 
+            }
+        </script>
+        
+    
+
+    </body>
+        
